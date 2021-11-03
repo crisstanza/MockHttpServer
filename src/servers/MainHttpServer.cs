@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Net.Mime;
+using System.Reflection;
 using System.Threading;
 using utils;
 
@@ -71,6 +72,7 @@ namespace servers
 		private void ProcessRequest(HttpListenerContext context)
 		{
 			HttpListenerRequest request = context.Request;
+			string inputBody = this.streamUtils.ReadToEnd(request.InputStream, request.ContentEncoding);
 			string[] urlSegments = request.Url.Segments;
 			if (urlSegments.Length == 2)
 			{
@@ -81,27 +83,55 @@ namespace servers
 					String icon = "favicon.ico";
 					String iconPath = currentPath + "html" + Path.DirectorySeparatorChar + icon;
 					byte[] contents = File.ReadAllBytes(iconPath);
+					PrintInputInfo(request, inputBody);
 					SendResponseIco(context, contents);
 					return;
 				}
-				else if(segment1 == "stop")
+				else if (segment1 == "stop")
 				{
-					SendResponseText(context, "stop");
+					PrintInputInfo(request, inputBody);
+					SendResponseJson(context, inputBody);
 					this.mainHttpListener.Stop();
 					return;
 				}
 			}
-			string inputBody = this.streamUtils.ReadToEnd(request.InputStream, request.ContentEncoding);
+			PrintInputInfo(request, inputBody);
+			String outputBody = GetOutputBody(request, inputBody);
+			SendResponseJson(context, outputBody);
+		}
+
+		private string GetOutputBody(HttpListenerRequest request, string inputBody)
+		{
+			string ping = request.QueryString.Get("ping");
+			if (ping != null)
+			{
+				String currentPath = this.fileSystemUtils.CurrentPath();
+				String page = "pong" + Path.DirectorySeparatorChar + ping;
+				String pagePath = currentPath + "html" + Path.DirectorySeparatorChar + page;
+				String contents = File.ReadAllText(pagePath);
+				contents = contents.Replace("${version}", Assembly.GetExecutingAssembly().GetName().Version.ToString());
+				return contents;
+			}
+			else
+			{
+				return inputBody;
+			}
+		}
+
+		private void PrintInputInfo(HttpListenerRequest request, string inputBody)
+		{
 			Console.WriteLine("================================================================================");
 			Console.WriteLine(this.dateTimeUtils.Now());
 			Console.WriteLine();
 			Console.WriteLine("url: " + request.Url);
+			Console.WriteLine("method: " + request.HttpMethod);
+			Console.WriteLine();
+			Console.WriteLine("ping: " + request.QueryString.Get("ping"));
 			Console.WriteLine();
 			Console.WriteLine("headers: " + request.Headers);
 			Console.WriteLine("body: " + inputBody);
 			Console.WriteLine("================================================================================");
 			Console.WriteLine();
-			SendResponseJson(context, inputBody);
 		}
 
 		private void SendResponseIco(HttpListenerContext context, byte[] responseArray)
