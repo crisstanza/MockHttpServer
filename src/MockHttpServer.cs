@@ -1,5 +1,6 @@
 ﻿using servers;
 using System;
+using System.IO;
 using System.Reflection;
 using utils;
 
@@ -10,9 +11,11 @@ class MockHttpServer
 
 	static void Main(String[] args)
 	{
+		FileSystemUtils fileSystemUtils = new FileSystemUtils(); 
 		Console.WriteLine("Current version: " + Assembly.GetExecutingAssembly().GetName().Version);
 		Console.WriteLine();
 		int port = DEFAULT_PORT;
+		string pongPath = fileSystemUtils.CurrentPath() + "html";
 		for (int i = 0; i < args.Length; i++)
 		{
 			String arg = args[i];
@@ -20,8 +23,12 @@ class MockHttpServer
 			{
 				port = Int32.Parse(args[++i]);
 			}
+			else if (arg == "-pong")
+			{
+				pongPath = args[++i];
+			}
 		}
-		MainHttpServer server = new MainHttpServer(DEFAULT_HOST, port);
+		MainHttpServer server = new MainHttpServer(DEFAULT_HOST, port, pongPath);
 		server.Start();
 
 	}

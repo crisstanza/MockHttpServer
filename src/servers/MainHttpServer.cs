@@ -12,6 +12,7 @@ namespace servers
 	{
 		private readonly string hostToListen;
 		private readonly int portToListen;
+		private readonly string pongPath;
 
 		private readonly HttpListener mainHttpListener;
 		
@@ -20,10 +21,11 @@ namespace servers
 		private readonly DateTimeUtils dateTimeUtils;
 		private readonly FileSystemUtils fileSystemUtils;
 
-		public MainHttpServer(string hostToListen, int portToListen)
+		public MainHttpServer(string hostToListen, int portToListen, string pongPath)
 		{
 			this.hostToListen = hostToListen;
 			this.portToListen = portToListen;
+			this.pongPath = pongPath;
 			this.mainHttpListener = new HttpListener();
 			this.httpListenerUtils = new HttpListenerUtils();
 			this.streamUtils = new StreamUtils();
@@ -38,7 +40,8 @@ namespace servers
 			this.mainHttpListener.Start();
 			Console.WriteLine("================================================================================");
 			Console.WriteLine("= " + this.dateTimeUtils.Now());
-			Console.WriteLine("= Listening on: " + prefix);
+			Console.WriteLine("= listening on: " + prefix);
+			Console.WriteLine("= pong path: " + this.pongPath);
 			Console.WriteLine("================================================================================");
 			Console.WriteLine();
 			new Thread(() =>
@@ -107,7 +110,7 @@ namespace servers
 			{
 				String currentPath = this.fileSystemUtils.CurrentPath();
 				String page = "pong" + Path.DirectorySeparatorChar + ping;
-				String pagePath = currentPath + "html" + Path.DirectorySeparatorChar + page;
+				String pagePath = this.pongPath + Path.DirectorySeparatorChar + page;
 				String contents = File.ReadAllText(pagePath);
 				contents = contents.Replace("${version}", Assembly.GetExecutingAssembly().GetName().Version.ToString());
 				return contents;
