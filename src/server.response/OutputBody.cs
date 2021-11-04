@@ -14,18 +14,22 @@ namespace server.response
 		public byte[] Body { get; set; }
 		public string ContentType { get; set; }
 
+		public string Accept { get; set; }
+
 		static OutputBody()
 		{
 			contentTypeByExtension.Add(".html", MediaTypeNames.Text.Html);
 			contentTypeByExtension.Add(".json", MediaTypeNames.Application.Json);
 			contentTypeByExtension.Add(".ico", "image/x-icon");
 			contentTypeByExtension.Add(".txt", MediaTypeNames.Text.Plain);
+			contentTypeByExtension.Add(".xml", MediaTypeNames.Text.Xml);
 		}
 
-		public OutputBody(string file, string body)
+		public OutputBody(string file, string body, string accept)
 		{
 			this.File = file;
 			this.Body = Encoding.UTF8.GetBytes(body ?? "");
+			this.Accept = accept;
 			SetContentType();
 		}
 
@@ -41,9 +45,11 @@ namespace server.response
 			string extension = Path.GetExtension(this.File);
 			if (extension != null && extension != "")
 			{
-				if (contentTypeByExtension.ContainsKey(extension))
+				string extensionLower = extension.ToLower();
+				if (contentTypeByExtension.ContainsKey(extensionLower))
 				{
-					this.ContentType = contentTypeByExtension[extension];
+					this.ContentType = contentTypeByExtension[extensionLower];
+					return;
 				}
 				else
 				{
@@ -51,9 +57,9 @@ namespace server.response
 					Console.WriteLine();
 				}
 			}
-			else
+			if (Accept != null && Accept != "")
 			{
-				this.ContentType = null;
+				this.ContentType = Accept.Split(",")[0];
 			}
 		}
 	}

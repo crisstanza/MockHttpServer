@@ -41,6 +41,7 @@ namespace servers
 			this.mainHttpListener.Start();
 			Console.WriteLine("================================================================================");
 			Console.WriteLine("= " + this.dateTimeUtils.Now());
+			Console.WriteLine("= cores: " + System.Environment.GetEnvironmentVariable("NUMBER_OF_PROCESSORS"));
 			Console.WriteLine("= listening on: " + prefix);
 			Console.WriteLine("= pong path: " + this.pongPath);
 			Console.WriteLine("================================================================================");
@@ -105,6 +106,7 @@ namespace servers
 
 		private OutputBody GetOutputBody(HttpListenerRequest request, string inputBody)
 		{
+			string accept = request.Headers.Get("Accept");
 			string ping = request.QueryString.Get("ping");
 			if (ping != null)
 			{
@@ -120,11 +122,11 @@ namespace servers
 				{
 					contents = "file not found: " + pagePath;
 				}
-				return new OutputBody(ping, contents);
+				return new OutputBody(ping, contents, accept);
 			}
 			else
 			{
-				return new OutputBody(request.Url.ToString(), inputBody);
+				return new OutputBody(request.Url.ToString(), inputBody, accept);
 			}
 		}
 

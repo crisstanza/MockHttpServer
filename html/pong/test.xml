@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<root version="${version}">
+	<lorem>ipsum</lorem>
+	<sit amet="" />
+</root>
