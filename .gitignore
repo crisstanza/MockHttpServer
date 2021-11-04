@@ -2,3 +2,4 @@ obj
 bin
 .vs/MockHttpServer/DesignTimeBuild
 .vs/MockHttpServer/v16
+RELEASE
