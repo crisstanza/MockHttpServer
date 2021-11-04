@@ -15,7 +15,7 @@ class MockHttpServer
 		Console.WriteLine("Current version: " + Assembly.GetExecutingAssembly().GetName().Version);
 		Console.WriteLine();
 		int port = DEFAULT_PORT;
-		string pongPath = fileSystemUtils.CurrentPath() + "html";
+		string pongPath = fileSystemUtils.CurrentPath() + "html" + Path.DirectorySeparatorChar + "pong";
 		for (int i = 0; i < args.Length; i++)
 		{
 			String arg = args[i];
@@ -23,7 +23,7 @@ class MockHttpServer
 			{
 				port = Int32.Parse(args[++i]);
 			}
-			else if (arg == "-pong")
+			else if (arg == "-pongPath")
 			{
 				pongPath = args[++i];
 			}

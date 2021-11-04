@@ -1,4 +1,5 @@
-﻿using System;
+﻿using server.response;
+using System;
 using System.IO;
 using System.Net;
 using System.Net.Mime;
@@ -15,7 +16,7 @@ namespace servers
 		private readonly string pongPath;
 
 		private readonly HttpListener mainHttpListener;
-		
+
 		private readonly HttpListenerUtils httpListenerUtils;
 		private readonly StreamUtils streamUtils;
 		private readonly DateTimeUtils dateTimeUtils;
@@ -87,38 +88,49 @@ namespace servers
 					String iconPath = currentPath + "html" + Path.DirectorySeparatorChar + icon;
 					byte[] contents = File.ReadAllBytes(iconPath);
 					PrintInputInfo(request, inputBody);
-					SendResponseIco(context, contents);
+					SendResponse(context, new OutputBody(icon, contents));
 					return;
 				}
 				else if (segment1 == "stop")
 				{
 					PrintInputInfo(request, inputBody);
-					SendResponseJson(context, inputBody);
+					SendResponse(context, GetOutputBody(request, inputBody));
 					this.mainHttpListener.Stop();
 					return;
 				}
 			}
 			PrintInputInfo(request, inputBody);
-			String outputBody = GetOutputBody(request, inputBody);
-			SendResponseJson(context, outputBody);
+			SendResponse(context, GetOutputBody(request, inputBody));
 		}
 
-		private string GetOutputBody(HttpListenerRequest request, string inputBody)
+		private OutputBody GetOutputBody(HttpListenerRequest request, string inputBody)
 		{
 			string ping = request.QueryString.Get("ping");
 			if (ping != null)
 			{
-				String currentPath = this.fileSystemUtils.CurrentPath();
-				String page = "pong" + Path.DirectorySeparatorChar + ping;
+				String page = ping;
 				String pagePath = this.pongPath + Path.DirectorySeparatorChar + page;
-				String contents = File.ReadAllText(pagePath);
-				contents = contents.Replace("${version}", Assembly.GetExecutingAssembly().GetName().Version.ToString());
-				return contents;
+				String contents;
+				if (File.Exists(pagePath))
+				{
+					contents = File.ReadAllText(pagePath);
+					contents = contents.Replace("${version}", Assembly.GetExecutingAssembly().GetName().Version.ToString());
+				}
+				else
+				{
+					contents = "file not found: " + pagePath;
+				}
+				return new OutputBody(ping, contents);
 			}
 			else
 			{
-				return inputBody;
+				return new OutputBody(request.Url.ToString(), inputBody);
 			}
+		}
+
+		private void SendResponse(HttpListenerContext context, OutputBody output)
+		{
+			this.httpListenerUtils.Write(context.Response, output.ContentType, output.Body);
 		}
 
 		private void PrintInputInfo(HttpListenerRequest request, string inputBody)
@@ -132,33 +144,9 @@ namespace servers
 			Console.WriteLine("ping: " + request.QueryString.Get("ping"));
 			Console.WriteLine();
 			Console.WriteLine("headers: " + request.Headers);
-			Console.WriteLine("body: " + inputBody);
+			Console.WriteLine("input body: " + inputBody);
 			Console.WriteLine("================================================================================");
 			Console.WriteLine();
-		}
-
-		private void SendResponseIco(HttpListenerContext context, byte[] responseArray)
-		{
-			SendResponseArray(context, "image/x-icon", responseArray);
-		}
-
-		private void SendResponseText(HttpListenerContext context, string responsestring)
-		{
-			SendResponse(context, MediaTypeNames.Text.Html, responsestring);
-		}
-		private void SendResponseJson(HttpListenerContext context, string responsestring)
-		{
-			SendResponse(context, MediaTypeNames.Application.Json, responsestring);
-		}
-
-		private void SendResponse(HttpListenerContext context, string contentType, string responsestring)
-		{
-			this.httpListenerUtils.Write(context.Response, contentType, responsestring);
-		}
-
-		private void SendResponseArray(HttpListenerContext context, String contentType, byte[] responseArray)
-		{
-			this.httpListenerUtils.Write(context.Response, contentType, responseArray);
 		}
 
 	}

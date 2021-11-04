@@ -1,0 +1,4 @@
+﻿Lorem ipsum.
+
+
+Version: ${version}
