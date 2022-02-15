@@ -15,8 +15,14 @@ namespace utils
 			response.ContentLength64 = buffer.Length;
 			response.StatusCode = (int)HttpStatusCode.OK;
 			Stream output = response.OutputStream;
-			output.Write(buffer, 0, buffer.Length);
-			output.Close();
+			try
+			{
+				output.Write(buffer, 0, buffer.Length);
+			}
+			finally
+			{
+				output.Close();
+			}
 		}
 	}
 }

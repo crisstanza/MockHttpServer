@@ -41,7 +41,7 @@ namespace servers
 			this.mainHttpListener.Start();
 			Console.WriteLine("================================================================================");
 			Console.WriteLine("= " + this.dateTimeUtils.Now());
-			Console.WriteLine("= cores: " + System.Environment.GetEnvironmentVariable("NUMBER_OF_PROCESSORS"));
+			Console.WriteLine("= cores: " + Environment.GetEnvironmentVariable("NUMBER_OF_PROCESSORS"));
 			Console.WriteLine("= listening on: " + prefix);
 			Console.WriteLine("= pong path: " + this.pongPath);
 			Console.WriteLine("================================================================================");
@@ -52,8 +52,8 @@ namespace servers
 				{
 					try
 					{
-						IAsyncResult context = this.mainHttpListener.BeginGetContext(new AsyncCallback(MainHttpListenerCallback), this.mainHttpListener);
-						context.AsyncWaitHandle.WaitOne();
+						IAsyncResult asyncResult = this.mainHttpListener.BeginGetContext(new AsyncCallback(MainHttpListenerCallback), this.mainHttpListener);
+						asyncResult.AsyncWaitHandle.WaitOne();
 					}
 					catch (HttpListenerException exc)
 					{
